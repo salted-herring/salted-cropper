@@ -92,8 +92,8 @@ class SaltedCropperExt extends DataExtension {
 	}
 	
 	private function duplicateImage($src_image) {
-		
-		$folder = Folder::find_or_make('cropper_resamples');
+		$currenFolder = str_replace('assets/', '', $src_image->Parent()->getRelativePath());
+		$folder = Folder::find_or_make($currenFolder.'cropper_resamples');
 		$dest_image = new Image();
 		$newFileName = ltrim($this->getUniqueFileName($folder->getRelativePath(), $src_image->Name, $src_image->ID, $folder),'_');
 		$newFileName = strtolower(str_replace('_','-', $newFileName));
