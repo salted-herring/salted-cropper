@@ -14,7 +14,7 @@ class SaltedCropperField extends LiteralField {
 		parent::__construct(
 			$name, 
 			($object->$name()->exists() ? ('<div id="salted-cropped-'. $name .'" style="max-width: 700px;"><img style="max-width: 100%; height: auto;" src="'.$object->$name()->URL.'" width="" height="" /></div>') : '<h3 id="salted-cropped-'. $name .'">- haven\'t cropped -</h3>').
-			'<div class="salted-cropper"'. $styles .' data-source="'.$source.'" data-name="'.$name.'" data-cropper-ratio="'.$cropper_ratio.'" data-min-width="'. $calc_width .'" data-min-height="' . $calc_height . '"><img src="'.$source_image->URL.'" width="'.$width.'" height="'.$height.'" /></div>'
+			(!empty($source_image) ? '<div class="salted-cropper"'. $styles .' data-source="'.$source.'" data-name="'.$name.'" data-cropper-ratio="'.$cropper_ratio.'" data-min-width="'. $calc_width .'" data-min-height="' . $calc_height . '"><img src="'.$source_image->URL.'" width="'.$width.'" height="'.$height.'" /></div>' : '')
 		);
 		
 		Requirements::combine_files(

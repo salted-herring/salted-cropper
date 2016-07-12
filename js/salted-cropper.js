@@ -1,6 +1,5 @@
 (function($){
 	$.entwine('ss', function($) {
-		//document.write('<script type="text/javascript" src="/salted-cropper/js/cropperjs/dist/cropper.min.js"></script>');
 		$('.salted-cropper').entwine({
 			onmatch: function(e) {
 				if ($(this).find('img').length > 0) {
