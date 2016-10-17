@@ -1,7 +1,5 @@
 <?php
 
-use SaltedHerring\Debugger as Debugger;
-
 class SaltedCropperField extends LiteralField {
 
 	public function __construct($name, $source, $object, $cropper_ratio = 1) {
@@ -35,4 +33,3 @@ class SaltedCropperField extends LiteralField {
 		);
 	}
 }
-

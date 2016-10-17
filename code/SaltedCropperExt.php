@@ -18,12 +18,8 @@ class SaltedCropperExt extends DataExtension {
 		parent::onBeforeWrite();
 		if (Controller::curr() && $this->owner->SaltedCropperScheduled) {
 
-			//Debugger::inspect('here', false);
 			$request = Controller::curr()->request;
 			if ($bindings = $request->postVar('cropper_bindings')) {
-
-				//Debugger::inspect($request->postVars());
-
 				foreach($bindings as $binding) {
 					$chain = explode(':', $binding);
 					$source = $chain[0];
@@ -58,6 +54,9 @@ class SaltedCropperExt extends DataExtension {
 		$cropped->write();
 		$cropped->updateFilesystem();
 		$this->owner->$target = $cropped->ID;
+		$source->SaltedCroppedImageID = $cropped->ID;
+		$source->write();
+		$source->updateFilesystem();
 		if (extension_loaded('imagick')) {
 			$this->scaleCropImagick($cropped->getFullPath(), $canvas_x, $canvas_y, $canvas_w, $canvas_h, $cropper_x, $cropper_y, $cropper_w, $cropper_h);
 		} else {

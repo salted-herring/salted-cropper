@@ -1,3 +1,6 @@
 ---
 Name: 'saltedcropper'
 ---
+Image:
+  extensions:
+    - SaltedCropperImageExt
