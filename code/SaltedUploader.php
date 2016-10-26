@@ -23,4 +23,18 @@ class SaltedUploader extends UploadField {
         );
         return $field;
     }
+
+    public function setValue($value, $record = null) {
+        $field = $this->name;
+        $fileID = $record->$field()->ID;
+
+        if ($file = File::get()->byID($fileID)) {
+            
+            if ($file->ClassName == 'Image') {
+
+            }
+        }
+
+        return parent::setValue($value, $record);
+    }
 }
