@@ -173,7 +173,7 @@ class SaltedCropperImageExt extends DataExtension {
 				imagejpeg($newImg, $image_path, 100);
 				break;
 		}
-		
+
 		imagedestroy($newImg);
 	}
 
