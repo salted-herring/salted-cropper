@@ -158,86 +158,24 @@ class SaltedCropperImageExt extends DataExtension {
 		$newImg = imagecreatetruecolor($cropper_w, $cropper_h);
 
 		imagecopyresampled($newImg, $image, 0, 0, $x, $y, $cropper_w, $cropper_h, $cropper_w, $cropper_h);
-		imagejpeg($newImg, $image_path, 100);
-		imagedestroy($newImg);
-	}
 
-
-	public static function scaleCrop($img, $w, $h, $ww, $hh, $x = 0, $y = 0, $flattened_dest = null, $level = null) {
-
-		$imgInfo = getimagesize($img);
-		$fn = $img;
 		switch ($imgInfo[2]) {
 			case 1:
-				$image = imagecreatefromgif($img);
+				imagegif($newImg, $image_path);
 				break;
 			case 2:
-				$image = imagecreatefromjpeg($img);
+				imagejpeg($newImg, $image_path, 100);
 				break;
 			case 3:
-				$image = imagecreatefrompng($img);
+				imagepng($newImg, $image_path);
 				break;
 			default:
-				return false;
+				imagejpeg($newImg, $image_path, 100);
+				break;
 		}
-
-		$newImg = imagecreatetruecolor($w, $h);
-		/* Check if this image is PNG or GIF, then set if Transparent */
-		if (($imgInfo[2] == 1) || ($imgInfo[2] == 3)) {
-			imagealphablending($newImg, false);
-			imagesavealpha($newImg, true);
-			$transparent = imagecolorallocatealpha($newImg, 255, 255, 255, 127);
-			imagefilledrectangle($newImg, 0, 0, $w, $h, $transparent);
-		}
-
-		imagecopyresampled($newImg, $image, 0, 0, 0, 0, $w, $h, $imgInfo[0], $imgInfo[1]);
-
-		$newImg_crop = imagecreatetruecolor($ww, $hh);
-		$flattened_crop = imagecreatetruecolor($ww, $hh);
-		imagecopy($newImg_crop, $newImg, 0, 0, $x, $y, $w, $h);
-		imagecopy($flattened_crop, $newImg, 0, 0, $x, $y, $w, $h);
-
-		$eyePatchPath = $_SERVER['DOCUMENT_ROOT']. '/themes/default/images/white_triangle_png8.png';
-		$eyePatchInfo = getimagesize($eyePatchPath);
-		$eyeWidth = $eyePatchInfo[0];
-		$eyeHeight = $eyePatchInfo[1];
-		$dst_y = ($hh - $eyeHeight) * 0.5;
-
-		$eyePatch = imagecreatefrompng($eyePatchPath);
-		imagealphablending($eyePatch, true);
-		imagesavealpha($newImg_crop, false);
-		imagecopy($newImg_crop, $eyePatch, 0, $dst_y, 0, 0, $eyeWidth, $eyeHeight);
-
-		if (!is_null($level)) {
-			$LevelPatchInfo = getimagesize($level);
-			$LevelPatch = imagecreatefrompng($level);
-
-			$newEyes = imagecreatetruecolor(200, 100);
-			imagealphablending($newEyes, false);
-			imagesavealpha($newEyes, true);
-			$transparent = imagecolorallocatealpha($newEyes, 255, 255, 255, 127);
-			imagefilledrectangle($newEyes, 0, 0, 200, 100, $transparent);
-
-			imagecopyresampled($newEyes, $LevelPatch, 0, 0, 0, 0, 200, 100, $LevelPatchInfo[0], $LevelPatchInfo[1]);
-			imagealphablending($newEyes, true);
-			imagesavealpha($flattened_crop, false);
-			imagecopy($flattened_crop, $newEyes, 0, $dst_y, 0, 0, 200, 100);
-
-			imagejpeg($flattened_crop, $flattened_dest, 91);
-			imagedestroy($flattened_crop);
-			imagedestroy($newEyes);
-		}
-
-
-		imagejpeg($newImg_crop, $fn, 91);
+		
 		imagedestroy($newImg);
-		imagedestroy($newImg_crop);
-		imagedestroy($eyePatch);
-
-		return true;
-
 	}
-
 
 	private function duplicateImage($src_image) {
 		$currenFolder = str_replace('assets/', '', $src_image->Parent()->getRelativePath());
