@@ -17,6 +17,7 @@
 							width: parseInt(thisForm.find('input[name="CropperWidth"]').val()),
 							height: parseInt(thisForm.find('input[name="CropperHeight"]').val())
 						};
+
 					// console.log(cords);
 					var cropper = new Cropper(image, {
 						viewMode: 3,

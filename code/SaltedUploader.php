@@ -6,8 +6,13 @@ class SaltedUploader extends UploadField {
         parent::__construct($name, $title);
     }
 
-    public function Field($properties = array()) {
-        $field = parent::Field($properties);
+    public function setCropperRatio($ratio) {
+        $this->Ratio = $ratio;
+        return $this;
+    }
+
+    public function getFileEditFields(File $file) {
+        
         Requirements::combine_files(
             'cropperfield-all.css',
             array(
@@ -23,15 +28,6 @@ class SaltedUploader extends UploadField {
             )
         );
 
-        return $field;
-    }
-
-    public function setCropperRatio($ratio) {
-        $this->Ratio = $ratio;
-        return $this;
-    }
-
-    public function getFileEditFields(File $file) {
         $fields = parent::getFileEditFields($file);
         if ($file->ClassName == 'Image') {
             $name = $this->name;

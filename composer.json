@@ -1,6 +1,6 @@
 {
 	"name": "salted-herring/salted-cropper",
-	"description": "Salted Herring's Image Cropper Field (in progress)",
+	"description": "Salted Herring's Image Cropper Field",
 	"type": "silverstripe-module",
 	"homepage": "https://github.com/salted-herring/salted-library",
 	"license": "MIT",
