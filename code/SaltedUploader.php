@@ -1,4 +1,4 @@
-<?php use SaltedHerring\Debugger as Debugger;
+<?php
 
 class SaltedUploader extends UploadField {
     private $Ratio = 1;

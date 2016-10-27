@@ -1,4 +1,4 @@
-<?php use SaltedHerring\Debugger as Debugger;
+<?php
 
 class SaltedCropperImageExt extends DataExtension {
 	private $doCrop = false;
