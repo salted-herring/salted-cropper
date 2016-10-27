@@ -41,5 +41,16 @@
     "gulpfile.js",
     "CONTRIBUTING.md",
     "ISSUE_TEMPLATE.md"
-  ]
+  ],
+  "version": "0.8.1",
+  "_release": "0.8.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.8.1",
+    "commit": "903925ffa81f8f164c8f25a474e4018ae5de6020"
+  },
+  "_source": "https://github.com/fengyuanchen/cropperjs.git",
+  "_target": "^0.8.1",
+  "_originalSource": "https://github.com/fengyuanchen/cropperjs.git",
+  "_direct": true
 }

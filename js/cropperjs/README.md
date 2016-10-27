@@ -11,25 +11,25 @@
 
 ## Table of contents
 
-  - [Features](#features)
-  - [Main](#main)
-  - [Getting started](#getting-started)
-  - [Options](#options)
-  - [Methods](#methods)
-  - [Events](#events)
-  - [No conflict](#no-conflict)
-  - [Browser support](#browser-support)
-  - [Contributing](#contributing)
-  - [Versioning](#versioning)
-  - [License](#license)
+- [Features](#features)
+- [Main](#main)
+- [Getting started](#getting-started)
+- [Options](#options)
+- [Methods](#methods)
+- [Events](#events)
+- [No conflict](#no-conflict)
+- [Browser support](#browser-support)
+- [Contributing](#contributing)
+- [Versioning](#versioning)
+- [License](#license)
 
 
 
 ## Features
 
-- Supports 39 [options](#options)
+- Supports 38 [options](#options)
 - Supports 27 [methods](#methods)
-- Supports 7 [events](#events)
+- Supports 6 [events](#events)
 - Supports touch (mobile)
 - Supports zooming
 - Supports rotating
@@ -48,8 +48,8 @@
 dist/
 ├── cropper.css     ( 5 KB)
 ├── cropper.min.css ( 4 KB)
-├── cropper.js      (92 KB)
-└── cropper.min.js  (29 KB)
+├── cropper.js      (99 KB)
+└── cropper.min.js  (38 KB)
 ```
 
 
@@ -61,8 +61,8 @@ Four quick start options are available:
 
 - [Download the latest release](https://github.com/fengyuanchen/cropperjs/archive/master.zip).
 - Clone the repository: `git clone https://github.com/fengyuanchen/cropperjs.git`.
-- Install with [NPM](http://npmjs.org): `npm install cropperjs`.
-- Install with [Bower](http://bower.io): `bower install cropperjs`.
+- Install with [NPM](https://npmjs.com): `npm install cropperjs`.
+- Install with [Bower](https://bower.io): `bower install cropperjs`.
 
 
 ### Installation
@@ -82,7 +82,7 @@ The [cdnjs](https://github.com/cdnjs/cdnjs) provides CDN support for Cropper.js'
 Initialize with `Cropper` constructor:
 
 - Browser: `window.Cropper`
-- CommonJS: `var Cropper = require('cropper')`
+- CommonJS: `var Cropper = require('cropperjs')`
 - NodeJS: `var Cropper = require('cropperjs')(window)`
 
 ```html
@@ -118,7 +118,25 @@ var cropper = new Cropper(image, {
 
 #### FAQ
 
-See the [FAQ](FAQ.md) documentation.
+##### How to crop a new area after zoom in or zoom out?
+
+> Just double click your mouse to enter crop mode.
+
+
+##### How to move the image after crop an area?
+
+> Just double click your mouse to enter move mode.
+
+
+##### How to fix aspect ratio in free ratio mode?
+
+> Just hold the `shift` key when you resize the crop box.
+
+
+##### How to crop a square area in free ratio mode?
+
+> Just hold the `shift` key when you crop on the image.
+
 
 
 #### Notes
@@ -241,6 +259,8 @@ By adding `crossOrigin` attribute to image will stop adding timestamp to image u
 Check the current image's Exif Orientation information.
 
 More exactly, read the Orientation value for rotating or flipping the image, and then override the Orientation value with `1` (the default value) to avoid some issues ([1](https://github.com/fengyuanchen/cropper/issues/120), [2](https://github.com/fengyuanchen/cropper/issues/509)) on iOS devices.
+
+Requires to set both the `rotatable` and `scalable` options to `true` at the same time.
 
 **Note:** Don't trust this all the time as some JPG images have incorrect (not standard) Orientation values.
 
@@ -435,20 +455,12 @@ The minimum height of the crop box.
 **Note:** This size is relative to the page, not the image.
 
 
-### build
+### ready
 
 - Type: `Function`
 - Default: `null`
 
-A shortcut of the "build" event.
-
-
-### built
-
-- Type: `Function`
-- Default: `null`
-
-A shortcut of the "built" event.
+A shortcut of the "ready" event.
 
 
 ### cropstart
@@ -497,13 +509,13 @@ A shortcut of the "zoom" event.
 
 ## Methods
 
-As there is an **asynchronous** process when load the image, you **should call most of the methods after built**, except "setAspectRatio", "replace" and "destroy".
+As there is an **asynchronous** process when load the image, you **should call most of the methods after ready**, except "setAspectRatio", "replace" and "destroy".
 
 > If a method doesn't need to return any value, it will return the cropper instance (`this`) for chain composition.
 
 ```js
 new Cropper(image, {
-  built: function () {
+  ready: function () {
     // this.cropper[method](argument1, , argument2, ..., argumentN);
     this.cropper.move(1, -1);
 
@@ -521,7 +533,7 @@ Show the crop box manually.
 ```js
 new Cropper(image, {
   autoCrop: false,
-  built: function () {
+  ready: function () {
     // Do something here
     // ...
 
@@ -726,7 +738,7 @@ Output the final cropped area position and size data (base on the natural size o
 
 > You can send the data to server-side to crop the image directly.
 
-![A schematic diagram for data's properties](assets/img/data.jpg)
+![A schematic diagram for data's properties](assets/images/data.jpg)
 
 
 ### setData(data)
@@ -750,7 +762,7 @@ Change the cropped area position and size with new data (base on the original im
 
 Output the container size data.
 
-![A schematic diagram for cropper's layers](assets/img/layers.jpg)
+![A schematic diagram for cropper's layers](assets/images/layers.jpg)
 
 
 ### getImageData()
@@ -843,6 +855,7 @@ Change the crop box position and size with new data.
     - `width`: the destination width of the output canvas
     - `height`: the destination height of the output canvas
     - `fillColor`: a color to fill any alpha values in the output canvas
+  - Note: The aspect ratio of the output canvas will be fitted to aspect ratio of the crop box automatically.
 
 - (return  value):
   - Type: `HTMLCanvasElement`
@@ -914,19 +927,15 @@ Change the drag mode.
 
 ## Events
 
-### build
 
-This event fires when a cropper instance starts to load an image.
+### ready
 
-
-### built
-
-This event fires when a cropper instance has built completely.
+This event fires when the target image has been loaded and the cropper instance is ready for cropping.
 
 ```js
 var cropper;
 
-image.addEventListener('built', function () {
+image.addEventListener('ready', function () {
   console.log(this.cropper === cropper);
   // -> true
 });
