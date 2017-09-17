@@ -1,10 +1,12 @@
 import * as $ from './utilities';
 
+// Globals
+const PointerEvent = typeof window !== 'undefined' ? window.PointerEvent : null;
+
 // Events
-const EVENT_MOUSE_DOWN = 'mousedown touchstart pointerdown MSPointerDown';
-const EVENT_MOUSE_MOVE = 'mousemove touchmove pointermove MSPointerMove';
-const EVENT_MOUSE_UP = 'mouseup touchend touchcancel pointerup pointercancel' +
-  ' MSPointerUp MSPointerCancel';
+const EVENT_POINTER_DOWN = PointerEvent ? 'pointerdown' : 'touchstart mousedown';
+const EVENT_POINTER_MOVE = PointerEvent ? 'pointermove' : 'touchmove mousemove';
+const EVENT_POINTER_UP = PointerEvent ? ' pointerup pointercancel' : 'touchend touchcancel mouseup';
 const EVENT_WHEEL = 'wheel mousewheel DOMMouseScroll';
 const EVENT_DBLCLICK = 'dblclick';
 const EVENT_RESIZE = 'resize';
@@ -41,7 +43,7 @@ export default {
       $.addListener(element, EVENT_ZOOM, options.zoom);
     }
 
-    $.addListener(cropper, EVENT_MOUSE_DOWN, (self.onCropStart = $.proxy(self.cropStart, self)));
+    $.addListener(cropper, EVENT_POINTER_DOWN, (self.onCropStart = $.proxy(self.cropStart, self)));
 
     if (options.zoomable && options.zoomOnWheel) {
       $.addListener(cropper, EVENT_WHEEL, (self.onWheel = $.proxy(self.wheel, self)));
@@ -51,8 +53,8 @@ export default {
       $.addListener(cropper, EVENT_DBLCLICK, (self.onDblclick = $.proxy(self.dblclick, self)));
     }
 
-    $.addListener(document, EVENT_MOUSE_MOVE, (self.onCropMove = $.proxy(self.cropMove, self)));
-    $.addListener(document, EVENT_MOUSE_UP, (self.onCropEnd = $.proxy(self.cropEnd, self)));
+    $.addListener(document, EVENT_POINTER_MOVE, (self.onCropMove = $.proxy(self.cropMove, self)));
+    $.addListener(document, EVENT_POINTER_UP, (self.onCropEnd = $.proxy(self.cropEnd, self)));
 
     if (options.responsive) {
       $.addListener(window, EVENT_RESIZE, (self.onResize = $.proxy(self.resize, self)));
@@ -85,7 +87,7 @@ export default {
       $.removeListener(element, EVENT_ZOOM, options.zoom);
     }
 
-    $.removeListener(cropper, EVENT_MOUSE_DOWN, self.onCropStart);
+    $.removeListener(cropper, EVENT_POINTER_DOWN, self.onCropStart);
 
     if (options.zoomable && options.zoomOnWheel) {
       $.removeListener(cropper, EVENT_WHEEL, self.onWheel);
@@ -95,8 +97,8 @@ export default {
       $.removeListener(cropper, EVENT_DBLCLICK, self.onDblclick);
     }
 
-    $.removeListener(document, EVENT_MOUSE_MOVE, self.onCropMove);
-    $.removeListener(document, EVENT_MOUSE_UP, self.onCropEnd);
+    $.removeListener(document, EVENT_POINTER_MOVE, self.onCropMove);
+    $.removeListener(document, EVENT_POINTER_UP, self.onCropEnd);
 
     if (options.responsive) {
       $.removeListener(window, EVENT_RESIZE, self.onResize);

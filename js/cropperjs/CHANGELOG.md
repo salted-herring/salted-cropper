@@ -1,6 +1,61 @@
 # Changelog
 
 
+## 1.0.0 (Sep 3, 2017)
+
+- Fixed a bug of zoom out after cleared the crop box in view mode 1, 2 and 3 (#209).
+- Fixed a bug of crop box resizing (#222).
+
+
+## 1.0.0-rc.3 (Jul 7, 2017)
+
+- Added two new options (`imageSmoothingEnabled` and `imageSmoothingQuality`) to `getCroppedCanvas` method.
+- Fixed a bug of RegExp using (#195 by @arusakov).
+
+
+## 1.0.0-rc.2 (May 30, 2017)
+
+- Fixed the issue of canvas box initialization (#179).
+
+
+## 1.0.0-rc.1 (Apr 30, 2017)
+
+- Change the `main` field value from `dist/cropper.js` (UMD) to `dist/cropper.common.js` (CommonJS).
+- Added `module` and `browser` fields to `package.json`.
+
+
+## 1.0.0-rc (Mar 25, 2017)
+
+- Fixed the bug of touch zoom (#161).
+- Fixed the bug of window resize (#162).
+- Improve the `toggleDragModeOnDblclick` option (only available when the `dragMode` option is set to `crop` or `move`)
+
+
+## 1.0.0-beta.2 (Feb 25, 2017)
+
+- Fixed the bug of rotate square image lead image shrink (#155).
+- Improved RegExps for DataURL processing (#156).
+
+
+## 1.0.0-beta.1 (Jan 21, 2017)
+
+- Use CSS3 2D Transforms instead of `left` and `top` for better performance (#138).
+- Set `withCredentials` attribute when read the image data by XMLHttpRequest (#141).
+
+
+## 1.0.0-beta (Jan 1, 2017)
+
+- Supports to set an element for preview (#113).
+- Improved event handler for Pointer Events (#127).
+
+
+## 1.0.0-alpha (Dec 4, 2016)
+
+- Built JavaScript with Rollup.
+- Build CSS with PostCSS.
+- Fixed a bug of auto crop when replace the image (#83).
+
+
 ## 0.8.1 (Sep 3, 2016)
 
 - Fixed the bug of cropping (#80).

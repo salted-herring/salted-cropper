@@ -35,10 +35,10 @@
     "tests",
     "test",
     "examples",
-    "assets",
-    "demo",
     "docs",
-    "gulpfile.js",
+    "build",
+    "postcss.config.json",
+    "rollup.config.js",
     "CONTRIBUTING.md",
     "ISSUE_TEMPLATE.md"
   ]

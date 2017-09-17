@@ -46,10 +46,12 @@
 
 ```
 dist/
-├── cropper.css     ( 5 KB)
-├── cropper.min.css ( 4 KB)
-├── cropper.js      (99 KB)
-└── cropper.min.js  (38 KB)
+├── cropper.css       ( 5 KB)
+├── cropper.min.css   ( 4 KB)
+├── cropper.js        (90 KB, UMD)
+├── cropper.min.js    (33 KB, UMD, compressed)
+├── cropper.common.js (90 KB, CommonJS)
+└── cropper.esm.js    (90 KB, ES Module)
 ```
 
 
@@ -83,7 +85,7 @@ Initialize with `Cropper` constructor:
 
 - Browser: `window.Cropper`
 - CommonJS: `var Cropper = require('cropperjs')`
-- NodeJS: `var Cropper = require('cropperjs')(window)`
+- ES2015: `import Cropper from 'cropperjs'`
 
 ```html
 <!-- Wrap the image or canvas element with a block element (container) -->
@@ -153,7 +155,7 @@ var cropper = new Cropper(image, {
 
 - [Known iOS resource limits](https://developer.apple.com/library/mac/documentation/AppleApplications/Reference/SafariWebContent/CreatingContentforSafarioniPhone/CreatingContentforSafarioniPhone.html): As iOS devices limit memory, the browser may crash when you are cropping a large image (iPhone camera resolution). To avoid this, you may resize the image first (preferably below 1024 pixels) before start a cropper.
 
-- Known image size increase: When export the cropped image on browser-side with the `HTMLCanvasElement.toDataURL` method, the the exported image'size may be greater than the original image's. This is because the exported image'type is not the same as the original image's. So just pass the original image's type as the first parameter to `toDataURL` to fix this. For example, if the original type is JPEG, then use `cropper.getCroppedCanvas().toDataURL('image/jpeg')` to export image.
+- Known image size increase: When export the cropped image on browser-side with the `HTMLCanvasElement.toDataURL` method, the size of the exported image may be greater than the original image's. This is because the type of the exported image is not the same as the original image's. So just pass the type the original image's as the first parameter to `toDataURL` to fix this. For example, if the original type is JPEG, then use `cropper.getCroppedCanvas().toDataURL('image/jpeg')` to export image.
 
 
 [⬆ back to top](#table-of-contents)
@@ -171,12 +173,12 @@ If you want to change the global default options, You may use `Cropper.setDefaul
 - Type: `Number`
 - Default: `0`
 - Options:
-  - `0`: the crop box is just within the container
-  - `1`: the crop box should be within the canvas
-  - `2`: the canvas should not be within the container
-  - `3`: the container should be within the canvas
+  - `0`: no restrictions
+  - `1`: restrict the crop box to not exceed the size of the canvas.
+  - `2`: restrict the minimum canvas size to fit within the container. If the proportions of the the canvas and the container differ, the minimum canvas will be surrounded by extra space in one of the dimensions.
+  - `3`: restrict the minimum canvas size to fill fit the container. If the proportions of the canvas and the container are different, the container will not be able to fit the whole canvas in one of the dimensions.
 
-Define the view mode of the cropper.
+Define the view mode of the cropper. If you set `viewMode` to `0`, the crop box can extend outside the canvas, while a value of `1`, `2` or `3` will restrict the crop box to the size of the canvas. A `viewMode` of `2` or `3` will additionally restrict the canvas to the container. Note that if the proportions of the canvas and the container are the same, there is no difference between `2` and `3`.
 
 
 ### dragMode
@@ -209,9 +211,9 @@ The previous cropped data if you had stored, will be passed to `setData` method 
 
 ### preview
 
-- Type: `String`
+- Type: `Element` or `String`
 - Default: `''`
-- A valid selector for [Document.querySelectorAll](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll)
+- An element or A valid selector for [Document.querySelectorAll](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll)
 
 Add extra elements (containers) for previewing.
 
@@ -249,6 +251,8 @@ Check if the current image is a cross-origin image.
 If it is, when clone the image, a `crossOrigin` attribute will be added to the cloned image element and a timestamp will be added to the `src` attribute to reload the source image to avoid browser cache error.
 
 By adding `crossOrigin` attribute to image will stop adding timestamp to image url, and stop reload of image.
+
+If the value of the image's `crossOrigin` attribute is `"use-credentials"`, then the `withCredentials` attribute will set to `true` when read the image data by XMLHttpRequest.
 
 
 ### checkOrientation
@@ -738,7 +742,7 @@ Output the final cropped area position and size data (base on the natural size o
 
 > You can send the data to server-side to crop the image directly.
 
-![A schematic diagram for data's properties](assets/images/data.jpg)
+![A schematic diagram for data's properties](docs/images/data.jpg)
 
 
 ### setData(data)
@@ -746,6 +750,7 @@ Output the final cropped area position and size data (base on the natural size o
 - **data**:
   - Type: `Object`
   - Properties: See the [`getData`](#getdatarounded) method.
+  - You may need to round the data properties before pass it in.
 
 Change the cropped area position and size with new data (base on the original image).
 
@@ -762,7 +767,7 @@ Change the cropped area position and size with new data (base on the original im
 
 Output the container size data.
 
-![A schematic diagram for cropper's layers](assets/images/layers.jpg)
+![A schematic diagram for cropper's layers](docs/images/layers.jpg)
 
 
 ### getImageData()
@@ -855,18 +860,23 @@ Change the crop box position and size with new data.
     - `width`: the destination width of the output canvas
     - `height`: the destination height of the output canvas
     - `fillColor`: a color to fill any alpha values in the output canvas
-  - Note: The aspect ratio of the output canvas will be fitted to aspect ratio of the crop box automatically.
+    - [`imageSmoothingEnabled`](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/imageSmoothingEnabled): set to change if images are smoothed (true, default) or not (false)
+    - [`imageSmoothingQuality`](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/imageSmoothingQuality): set the quality of image smoothing, one of "low", "medium", or "high"
 
 - (return  value):
   - Type: `HTMLCanvasElement`
   - A canvas drawn the cropped image.
+
+- Notes:
+  - The aspect ratio of the output canvas will be fitted to aspect ratio of the crop box automatically.
+  - If you intend to get a JPEG image from the output canvas, you should set the `fillColor` option first, if not, the transparent part in the JPEG image will become black by default.
 
 - Browser support:
   - Basic image: requires [Canvas](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement) support ([IE 9+](http://caniuse.com/canvas)).
   - Rotated image: requires [CSS3 2D Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform) support ([IE 9+](http://caniuse.com/transforms2d)).
   - Cross-origin image: requires HTML5 [CORS settings attributes](https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_settings_attributes) support ([IE 11+](http://caniuse.com/cors)).
 
-Get a canvas drawn the cropped image. If it is not cropped, then returns the whole canvas.
+Get a canvas drawn the cropped image. If it is not cropped, then returns a canvas drawn the whole image.
 
 > After then, you can display the canvas as an image directly, or use [HTMLCanvasElement.toDataURL](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toDataURL) to get a Data URL, or use [HTMLCanvasElement.toBlob](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob) to get a blob and upload it to server with [FormData](https://developer.mozilla.org/en-US/docs/Web/API/FormData) if the browser supports these APIs.
 
@@ -875,7 +885,10 @@ cropper.getCroppedCanvas();
 
 cropper.getCroppedCanvas({
   width: 160,
-  height: 90
+  height: 90,
+  fillColor: '#fff',
+  imageSmoothingEnabled: false,
+  imageSmoothingQuality: 'high',
 });
 
 // Upload cropped image to server if the browser supports `HTMLCanvasElement.toBlob`
@@ -1093,7 +1106,9 @@ Maintained under the [Semantic Versioning guidelines](http://semver.org/).
 
 ## Related projects
 
-- [react-cropperjs](https://github.com/TAPP-TV/react-cropperjs) by @pbojinov
-
+- [iron-cropper](https://www.webcomponents.org/element/safetychanger/iron-cropper) (web component) by @safetychanger
+- [react-cropper](https://github.com/roadmanfong/react-cropper) by @roadmanfong
+- [vue-cropperjs](https://github.com/Agontuk/vue-cropperjs) by @Agontuk
+- [ember-cropperjs](https://github.com/danielthall/ember-cropperjs) by @danielthall
 
 [⬆ back to top](#table-of-contents)

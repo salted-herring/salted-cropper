@@ -22,7 +22,7 @@ const EVENT_CROP = 'crop';
 
 // RegExps
 const REGEXP_DATA_URL = /^data:/;
-const REGEXP_DATA_URL_JPEG = /^data:image\/jpeg.*;base64,/;
+const REGEXP_DATA_URL_JPEG = /^data:image\/jpeg;base64,/;
 
 let AnotherCropper;
 
@@ -46,6 +46,7 @@ class Cropper {
     self.canvasData = null;
     self.cropBoxData = null;
     self.previews = null;
+    self.pointers = {};
     self.init();
   }
 
@@ -65,7 +66,8 @@ class Cropper {
       self.isImg = true;
 
       // e.g.: "img/picture.jpg"
-      self.originalUrl = url = element.getAttribute('src');
+      url = element.getAttribute('src');
+      self.originalUrl = url;
 
       // Stop when it's a blank image
       if (!url) {
@@ -100,7 +102,7 @@ class Cropper {
 
     // XMLHttpRequest disallows to open a Data URL in some browsers like IE11 and Safari
     if (REGEXP_DATA_URL.test(url)) {
-      if (REGEXP_DATA_URL_JPEG) {
+      if (REGEXP_DATA_URL_JPEG.test(url)) {
         self.read($.dataURLToArrayBuffer(url));
       } else {
         self.clone();
@@ -110,7 +112,7 @@ class Cropper {
 
     const xhr = new XMLHttpRequest();
 
-    xhr.onerror = xhr.onabort = () => {
+    xhr.onerror = () => {
       self.clone();
     };
 
@@ -124,6 +126,7 @@ class Cropper {
 
     xhr.open('get', url);
     xhr.responseType = 'arraybuffer';
+    xhr.withCredentials = element.crossOrigin === 'use-credentials';
     xhr.send();
   }
 
@@ -140,7 +143,6 @@ class Cropper {
       self.url = $.arrayBufferToDataURL(arrayBuffer);
 
       switch (orientation) {
-
         // flip horizontal
         case 2:
           scaleX = -1;
@@ -177,6 +179,8 @@ class Cropper {
         case 8:
           rotate = -90;
           break;
+
+        default:
       }
     }
 
@@ -198,8 +202,6 @@ class Cropper {
     const url = self.url;
     let crossOrigin;
     let crossOriginUrl;
-    let start;
-    let stop;
 
     if (self.options.checkCrossOrigin && $.isCrossOriginURL(url)) {
       crossOrigin = element.crossOrigin;
@@ -224,9 +226,13 @@ class Cropper {
     }
 
     image.src = crossOriginUrl || url;
+
+    const start = $.proxy(self.start, self);
+    const stop = $.proxy(self.stop, self);
+
     self.image = image;
-    self.onStart = start = $.proxy(self.start, self);
-    self.onStop = stop = $.proxy(self.stop, self);
+    self.onStart = start;
+    self.onStop = stop;
 
     if (self.isImg) {
       if (element.complete) {
@@ -279,12 +285,6 @@ class Cropper {
     const options = self.options;
     const element = self.element;
     const image = self.image;
-    let container;
-    let cropper;
-    let canvas;
-    let dragBox;
-    let cropBox;
-    let face;
 
     if (!self.loaded) {
       return;
@@ -295,17 +295,25 @@ class Cropper {
       self.unbuild();
     }
 
+    // Create cropper elements
+    const container = element.parentNode;
     const template = $.createElement('div');
+
     template.innerHTML = TEMPLATE;
 
-    // Create cropper elements
-    self.container = container = element.parentNode;
-    self.cropper = cropper = $.getByClass(template, 'cropper-container')[0];
-    self.canvas = canvas = $.getByClass(cropper, 'cropper-canvas')[0];
-    self.dragBox = dragBox = $.getByClass(cropper, 'cropper-drag-box')[0];
-    self.cropBox = cropBox = $.getByClass(cropper, 'cropper-crop-box')[0];
+    const cropper = $.getByClass(template, 'cropper-container')[0];
+    const canvas = $.getByClass(cropper, 'cropper-canvas')[0];
+    const dragBox = $.getByClass(cropper, 'cropper-drag-box')[0];
+    const cropBox = $.getByClass(cropper, 'cropper-crop-box')[0];
+    const face = $.getByClass(cropBox, 'cropper-face')[0];
+
+    self.container = container;
+    self.cropper = cropper;
+    self.canvas = canvas;
+    self.dragBox = dragBox;
+    self.cropBox = cropBox;
     self.viewBox = $.getByClass(cropper, 'cropper-view-box')[0];
-    self.face = face = $.getByClass(cropBox, 'cropper-face')[0];
+    self.face = face;
 
     $.appendChild(canvas, image);
 
@@ -326,9 +334,9 @@ class Cropper {
     options.aspectRatio = Math.max(0, options.aspectRatio) || NaN;
     options.viewMode = Math.max(0, Math.min(3, Math.round(options.viewMode))) || 0;
 
-    if (options.autoCrop) {
-      self.cropped = true;
+    self.cropped = options.autoCrop;
 
+    if (options.autoCrop) {
       if (options.modal) {
         $.addClass(dragBox, 'cropper-modal');
       }

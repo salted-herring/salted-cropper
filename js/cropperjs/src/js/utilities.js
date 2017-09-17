@@ -1,15 +1,15 @@
 // RegExps
-const REGEXP_DATA_URL_HEAD = /^data:([^;]+);base64,/;
+const REGEXP_DATA_URL_HEAD = /^data:.*,/;
 const REGEXP_HYPHENATE = /([a-z\d])([A-Z])/g;
-const REGEXP_ORIGINS = /^(https?:)\/\/([^:\/\?#]+):?(\d*)/i;
+const REGEXP_ORIGINS = /^(https?:)\/\/([^:/?#]+):?(\d*)/i;
 const REGEXP_SPACES = /\s+/;
 const REGEXP_SUFFIX = /^(width|height|left|top|marginLeft|marginTop)$/;
 const REGEXP_TRIM = /^\s+(.*)\s+$/;
 const REGEXP_USERAGENT = /(Macintosh|iPhone|iPod|iPad).*AppleWebKit/i;
-const navigator = window.navigator;
-const IS_SAFARI_OR_UIWEBVIEW = navigator && REGEXP_USERAGENT.test(navigator.userAgent);
 
 // Utilities
+const navigator = typeof window !== 'undefined' ? window.navigator : null;
+const IS_SAFARI_OR_UIWEBVIEW = navigator && REGEXP_USERAGENT.test(navigator.userAgent);
 const objectProto = Object.prototype;
 const toString = objectProto.toString;
 const hasOwnProperty = objectProto.hasOwnProperty;
@@ -80,7 +80,7 @@ export function each(obj, callback) {
     if (isArray(obj) || isNumber(obj.length)/* array-like */) {
       const length = obj.length;
 
-      for (i = 0; i < length; i++) {
+      for (i = 0; i < length; i += 1) {
         if (callback.call(obj, obj[i], i, obj) === false) {
           break;
         }
@@ -95,31 +95,22 @@ export function each(obj, callback) {
   return obj;
 }
 
-export function extend(...args) {
-  const deep = args[0] === true;
-  const data = deep ? args[1] : args[0];
-
-  if (args.length > 1) {
-    // if (Object.assign) {
-    //   return Object.assign.apply(Object, args);
-    // }
-
-    args.shift();
+export function extend(obj, ...args) {
+  if (isObject(obj) && args.length > 0) {
+    if (Object.assign) {
+      return Object.assign(obj, ...args);
+    }
 
     args.forEach((arg) => {
       if (isObject(arg)) {
         Object.keys(arg).forEach((key) => {
-          if (deep && isObject(data[key])) {
-            extend(true, data[key], arg[key]);
-          } else {
-            data[key] = arg[key];
-          }
+          obj[key] = arg[key];
         });
       }
     });
   }
 
-  return data;
+  return obj;
 }
 
 export function proxy(fn, context, ...args) {
@@ -147,6 +138,10 @@ export function hasClass(element, value) {
 }
 
 export function addClass(element, value) {
+  if (!value) {
+    return;
+  }
+
   if (isNumber(element.length)) {
     each(element, (elem) => {
       addClass(elem, value);
@@ -169,6 +164,10 @@ export function addClass(element, value) {
 }
 
 export function removeClass(element, value) {
+  if (!value) {
+    return;
+  }
+
   if (isNumber(element.length)) {
     each(element, (elem) => {
       removeClass(elem, value);
@@ -187,6 +186,10 @@ export function removeClass(element, value) {
 }
 
 export function toggleClass(element, value, added) {
+  if (!value) {
+    return;
+  }
+
   if (isNumber(element.length)) {
     each(element, (elem) => {
       toggleClass(elem, value, added);
@@ -230,7 +233,12 @@ export function removeData(element, name) {
   if (isObject(element[name])) {
     delete element[name];
   } else if (element.dataset) {
-    delete element.dataset[name];
+    // #128 Safari not allows to delete dataset property
+    try {
+      delete element.dataset[name];
+    } catch (e) {
+      element.dataset[name] = null;
+    }
   } else {
     element.removeAttribute(`data-${hyphenate(name)}`);
   }
@@ -275,7 +283,7 @@ export function addListener(element, type, handler, once) {
   if (element.addEventListener) {
     element.addEventListener(type, handler, false);
   } else if (element.attachEvent) {
-    element.attachEvent('on${type}', handler);
+    element.attachEvent(`on${type}`, handler);
   }
 }
 
@@ -355,27 +363,6 @@ export function getOffset(element) {
   };
 }
 
-export function getTouchesCenter(touches) {
-  const length = touches.length;
-  let pageX = 0;
-  let pageY = 0;
-
-  if (length) {
-    each(touches, (touch) => {
-      pageX += touch.pageX;
-      pageY += touch.pageY;
-    });
-
-    pageX /= length;
-    pageY /= length;
-  }
-
-  return {
-    pageX,
-    pageY,
-  };
-}
-
 export function getByTag(element, tagName) {
   return element.getElementsByTagName(tagName);
 }
@@ -439,11 +426,21 @@ export function getImageSize(image, callback) {
   newImage.src = image.src;
 }
 
-export function getTransform(data) {
+export function getTransforms(data) {
   const transforms = [];
+  const translateX = data.translateX;
+  const translateY = data.translateY;
   const rotate = data.rotate;
   const scaleX = data.scaleX;
   const scaleY = data.scaleY;
+
+  if (isNumber(translateX) && translateX !== 0) {
+    transforms.push(`translateX(${translateX}px)`);
+  }
+
+  if (isNumber(translateY) && translateY !== 0) {
+    transforms.push(`translateY(${translateY}px)`);
+  }
 
   // Rotate should come first before scale to match orientation transform
   if (isNumber(rotate) && rotate !== 0) {
@@ -458,7 +455,13 @@ export function getTransform(data) {
     transforms.push(`scaleY(${scaleY})`);
   }
 
-  return transforms.length ? transforms.join(' ') : 'none';
+  const transform = transforms.length ? transforms.join(' ') : 'none';
+
+  return {
+    WebkitTransform: transform,
+    msTransform: transform,
+    transform,
+  };
 }
 
 export function getRotatedSizes(data, reversed) {
@@ -486,7 +489,7 @@ export function getRotatedSizes(data, reversed) {
   };
 }
 
-export function getSourceCanvas(image, data) {
+export function getSourceCanvas(image, data, options) {
   const canvas = createElement('canvas');
   const context = canvas.getContext('2d');
   let dstX = 0;
@@ -526,6 +529,11 @@ export function getSourceCanvas(image, data) {
   canvas.width = canvasWidth;
   canvas.height = canvasHeight;
 
+  if (options.fillColor) {
+    context.fillStyle = options.fillColor;
+    context.fillRect(0, 0, canvasWidth, canvasHeight);
+  }
+
   if (advanced) {
     dstX = -dstWidth / 2;
     dstY = -dstHeight / 2;
@@ -543,12 +551,18 @@ export function getSourceCanvas(image, data) {
     context.scale(scaleX, scaleY);
   }
 
+  context.imageSmoothingEnabled = !!options.imageSmoothingEnabled;
+
+  if (options.imageSmoothingQuality) {
+    context.imageSmoothingQuality = options.imageSmoothingQuality;
+  }
+
   context.drawImage(
     image,
     Math.floor(dstX),
     Math.floor(dstY),
     Math.floor(dstWidth),
-    Math.floor(dstHeight)
+    Math.floor(dstHeight),
   );
 
   if (advanced) {
@@ -562,7 +576,7 @@ export function getStringFromCharCode(dataView, start, length) {
   let str = '';
   let i = start;
 
-  for (length += start; i < length; i++) {
+  for (length += start; i < length; i += 1) {
     str += fromCharCode(dataView.getUint8(i));
   }
 
@@ -593,7 +607,7 @@ export function getOrientation(arrayBuffer) {
         break;
       }
 
-      offset++;
+      offset += 1;
     }
   }
 
@@ -620,7 +634,7 @@ export function getOrientation(arrayBuffer) {
   if (ifdStart) {
     length = dataView.getUint16(ifdStart, littleEndian);
 
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < length; i += 1) {
       offset = ifdStart + (i * 12) + 2;
 
       if (dataView.getUint16(offset, littleEndian) === 0x0112 /* Orientation */) {
@@ -651,7 +665,7 @@ export function dataURLToArrayBuffer(dataURL) {
   const dataView = new Uint8Array(arrayBuffer);
   let i;
 
-  for (i = 0; i < length; i++) {
+  for (i = 0; i < length; i += 1) {
     dataView[i] = binary.charCodeAt(i);
   }
 
@@ -665,7 +679,7 @@ export function arrayBufferToDataURL(arrayBuffer) {
   let base64 = '';
   let i;
 
-  for (i = 0; i < length; i++) {
+  for (i = 0; i < length; i += 1) {
     base64 += fromCharCode(dataView[i]);
   }
 
