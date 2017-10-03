@@ -1,4 +1,4 @@
-# Salted Cropper (2.0)
+# Salted Cropper (1.0.2)
 Salted Herring's Cropper Field for SilverStripe. This is to avoid the deadly issue that FileSync task will disconnect all cropped images, when using silverstripe-cropperfield.
 Please remove silverstripe-cropperfield module if you have already installed it, other it will result in funny conflict.
 
@@ -35,6 +35,10 @@ This doc is for 1.0 and above. If you are using 1.0- versions, do not use this d
     public function getCMSFields() {
         $fields = parent::getCMSFields();
         ...
+        // adding a free cropper
+        $fields->addFieldToTab(TAB_NAME, SaltedUploader::create('Photo', A_TITLE_TO_THE_FILED);
+
+        // adding cropper with ratio
         $fields->addFieldToTab(TAB_NAME, SaltedUploader::create('Photo', A_TITLE_TO_THE_FILED)->setCropperRatio(16/9));
         ...
         return $fields;        
