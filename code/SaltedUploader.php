@@ -15,6 +15,13 @@ class SaltedUploader extends UploadField
         return $this;
     }
 
+    public function getFileEditActions(File $file)
+    {
+        $actions            =   parent::getFileEditActions($file);
+        $actions->push(FormAction::create('closeCropper', 'Close')->addExtraClass('ss-ui-action-destructive'));
+        return $actions;
+    }
+
     public function getFileEditFields(File $file)
     {
         Requirements::combine_files(
