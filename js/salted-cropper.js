@@ -65,7 +65,7 @@
                                             });
 
                     thisFrame.addClass('floating-editor');
-                    thisBody.addClass('floating-editor-body');
+                    thisBody.addClass('floating-editor-body').removeClass('cms');
                     thisFrame.parent().addClass('floating-editor-tray');
                     $('#Form_EditForm_action_closeCropper').click(function(e)
                     {
