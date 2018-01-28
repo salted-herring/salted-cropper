@@ -50,8 +50,7 @@ Pleaes note: SaltedUploader will be retired soon. Please replace all SaltedUploa
 
     ```
 
-5. Upload and image, and then click the edit button - in the drop down area, you will see the cropper area. Do the cropping and then save the image
-(NOTE: if you don't save the image editing, before you save the page/data object, it will not take effect)
+5. Add image > upload/select > save > edit > do your cropping
 
 6. Output
     ```html
