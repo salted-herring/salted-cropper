@@ -1,0 +1,9 @@
+.salted-croppable-dialog {
+    box-sizing: border-box;
+    width: 100% !important;
+    height: 96vh !important;
+}
+
+.salted-croppable-dialog * {
+    box-sizing: border-box;
+}
