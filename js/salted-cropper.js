@@ -11,16 +11,13 @@
 
                     var thisCropper     =   $(this),
                         thisForm        =   $(this).parents('form:eq(0)'),
-                        thisBody        =   $(this).parents('body:eq(0)'),
                         thisSrcRaw      =   thisForm.attr('action').split('/');
 
                         thisSrcRaw.pop();
                         thisSrc         =   thisSrcRaw.join('/') + '/edit';
 
-                    var thisFrame       =   parentWindow.find('iframe[src="' + thisSrc + '"]'),
-                        thisBtnEdit     =   thisFrame.parents('li.ss-uploadfield-item:eq(0)').find('button.ss-uploadfield-item-edit'),
-                        image           =   $(this).find('img')[0],
-                        ratio           =   $(this).attr('data-cropper-ratio'),
+                    var image           =   $(this).find('img')[0],
+                        ratio           =   parseFloat(thisForm.find('input[name="CropperRatio"]').val()),
                         minWidth        =   $(this).attr('data-min-width'),
                         minHeight       =   $(this).attr('data-min-height'),
                         name            =   $(this).attr('data-name'),
@@ -63,29 +60,7 @@
                                                     cropper.setCropBoxData(cords);
                                                 }
                                             });
-
-                    thisFrame.addClass('floating-editor');
-                    thisBody.addClass('floating-editor-body').removeClass('cms');
-                    thisFrame.parent().addClass('floating-editor-tray');
-                    $('#Form_EditForm_action_closeCropper').click(function(e)
-                    {
-                        e.preventDefault();
-                        thisBtnEdit.trigger('click');
-                    });
-
-                    thisBtnEdit.unbind('click').click(function(e)
-                    {
-                        e.preventDefault();
-                        e.stopImmediatePropagation();
-
-                        var thisFrame       =   $(parent.document).find('iframe[src="' + thisSrc + '"]');
-
-                        if (thisFrame.parent().hasClass('hide')) {
-                            thisFrame.parent().removeClass('hide');
-                        } else {
-                            thisFrame.parent().addClass('hide');
-                        }
-                    });
+                    console.log(ratio);
                 }
             }
         });
