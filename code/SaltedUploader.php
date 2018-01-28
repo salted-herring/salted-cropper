@@ -40,7 +40,7 @@ class SaltedUploader extends UploadField
         );
 
         $fields = parent::getFileEditFields($file);
-        
+
         if ($file->ClassName == 'Image') {
             $name           =   $this->name;
             $width          =   $file->Width;

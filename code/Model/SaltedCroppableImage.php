@@ -14,7 +14,6 @@ class SaltedCroppableImage extends DataObject
      * @var array
      */
     private static $db = [
-        'Ratio'             =>  'Varchar(64)',
         'ContainerX'        =>  'Int',
         'ContainerY'        =>  'Int',
         'ContainerWidth'    =>  'Int',
@@ -86,11 +85,6 @@ class SaltedCroppableImage extends DataObject
                     'Original',
                     'Website logo'
                 )
-                // LiteralField::create(
-                //     'CroppedImage',
-                //     $this->Cropped()->exists() ?
-                //     '<p style="font-style: italic; color: #cccccc;">Upload an original image and crop it</p>'
-                // )
             ]
         );
 
@@ -104,20 +98,9 @@ class SaltedCroppableImage extends DataObject
             $calc_height    =   $height * $ratio;
             $styles         =   " style=\"width:{$calc_width}px; height:{$calc_height}px\"";
 
-            $html           =   '<div class="salted-cropper"'. $styles .' data-name="'.$name.'" data-cropper-ratio="'.$this->Ratio.'" data-min-width="'. $calc_width .'" data-min-height="' . $calc_height . '"><img src="'.$this->Original()->URL.'" width="'.$width.'" height="'.$height.'" /></div>';
+            $html           =   '<div class="salted-cropper"'. $styles .' data-name="'.$name.'" data-min-width="'. $calc_width .'" data-min-height="' . $calc_height . '"><img src="'.$this->Original()->URL.'" width="'.$width.'" height="'.$height.'" /></div>';
 
             $fields->push(LiteralField::create('SaltedCropper', $html));
-            $fields->push(HiddenField::create('CropperRatio')->setValue($this->Ratio));
-            $fields->push(HiddenField::create('ContainerX')->setValue($this->ContainerX));
-            $fields->push(HiddenField::create('ContainerX')->setValue($this->ContainerX));
-            $fields->push(HiddenField::create('ContainerY')->setValue($this->ContainerY));
-            $fields->push(HiddenField::create('ContainerWidth')->setValue($this->ContainerWidth));
-            $fields->push(HiddenField::create('ContainerHeight')->setValue($this->ContainerHeight));
-            $fields->push(HiddenField::create('CropperX')->setValue($this->CropperX));
-            $fields->push(HiddenField::create('CropperY')->setValue($this->CropperY));
-            $fields->push(HiddenField::create('CropperWidth')->setValue($this->CropperWidth));
-            $fields->push(HiddenField::create('CropperHeight')->setValue($this->CropperHeight));
-
         }
 
         $this->extend('updateCMSFields', $fields);
@@ -131,7 +114,7 @@ class SaltedCroppableImage extends DataObject
     {
         if (!$this->Original()->exists() && $this->Cropped()->exists()) {
             $this->Cropped()->delete();
-        } else {
+        } elseif ($this->Original()->exists()) {
             $changes = $this->getChangedFields();
 
             if ($this->hasChanged($changes, 'ContainerX') ||
@@ -193,7 +176,7 @@ class SaltedCroppableImage extends DataObject
     public function onBeforeDelete()
     {
         parent::onBeforeDelete();
-        if (!empty($this->CroppedID)) {
+        if ($this->Cropped()->exists()) {
             $this->Cropped()->delete();
         }
     }
@@ -210,6 +193,7 @@ class SaltedCroppableImage extends DataObject
         $cropper_h = $this->CropperHeight;
 
         $cropped = $this->duplicateImage($this->Original());
+        $cropped->isCropped =   true;
         $cropped->write();
         //$this->CroppedID = $cropped->ID;
         if (extension_loaded('imagick')) {

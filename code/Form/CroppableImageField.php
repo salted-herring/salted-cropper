@@ -33,11 +33,17 @@ class CroppableImageField extends FormField
         'doRemoveCroppableImage'
     );
 
+    public function setCropperRatio($ratio)
+    {
+        $this->Ratio        =   $ratio;
+        return $this;
+    }
+
     public function Field($properties = array())
     {
         Requirements::css(SALTEDCROPPER_PATH . '/css/salted-croppable.css');
         Requirements::javascript(SALTEDCROPPER_PATH . '/js/salted-croppable-field.js');
-        
+
         return parent::Field();
     }
 
@@ -73,6 +79,7 @@ class CroppableImageField extends FormField
         if ($image) {
             $form->loadDataFrom($image);
             // $fields->push(HiddenField::create('SaltedCroppableImageID', 'SaltedCroppableImageID', $image->ID));
+            $fields->push(HiddenField::create('CropperRatio')->setValue($this->Ratio));
             $fields->push(HiddenField::create('ContainerX')->setValue($image->ContainerX));
             $fields->push(HiddenField::create('ContainerX')->setValue($image->ContainerX));
             $fields->push(HiddenField::create('ContainerY')->setValue($image->ContainerY));

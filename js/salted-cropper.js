@@ -17,7 +17,7 @@
                         thisSrc         =   thisSrcRaw.join('/') + '/edit';
 
                     var image           =   $(this).find('img')[0],
-                        ratio           =   $(this).attr('data-cropper-ratio'),
+                        ratio           =   parseFloat(thisForm.find('input[name="CropperRatio"]').val()),
                         minWidth        =   $(this).attr('data-min-width'),
                         minHeight       =   $(this).attr('data-min-height'),
                         name            =   $(this).attr('data-name'),
@@ -60,9 +60,7 @@
                                                     cropper.setCropBoxData(cords);
                                                 }
                                             });
-                    // thisFrame.addClass('floating-editor');
-                    // thisBody.addClass('floating-editor-body').removeClass('cms');
-                    // thisFrame.parent().addClass('floating-editor-tray');
+                    console.log(ratio);
                 }
             }
         });
