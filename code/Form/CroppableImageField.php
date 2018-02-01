@@ -42,6 +42,7 @@ class CroppableImageField extends FormField
     public function Field($properties = array())
     {
         Requirements::css(SALTEDCROPPER_PATH . '/css/salted-croppable.css');
+        Requirements::css(SALTEDCROPPER_PATH . '/css/salted-cropper.css');
         Requirements::javascript(SALTEDCROPPER_PATH . '/js/salted-croppable-field.js');
 
         return parent::Field();
