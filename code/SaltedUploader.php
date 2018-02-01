@@ -27,7 +27,8 @@ class SaltedUploader extends UploadField
         Requirements::combine_files(
             'cropperfield-all.css',
             array(
-                SALTEDCROPPER_PATH . '/js/cropperjs/dist/cropper.min.css'
+                SALTEDCROPPER_PATH . '/js/cropperjs/dist/cropper.min.css',
+                SALTEDCROPPER_PATH . '/css/salted-cropper.css'
             )
         );
 
