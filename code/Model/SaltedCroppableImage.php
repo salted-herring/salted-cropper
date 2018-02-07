@@ -334,6 +334,6 @@ class SaltedCroppableImage extends DataObject
 
     public function forTemplate()
     {
-
+        return $this->renderWith('SaltedCroppableImage');
     }
 }
