@@ -33,6 +33,17 @@ class SaltedCroppableImage extends DataObject
         'Cropped'       =>  'Image'
     ];
 
+    public function getURL()
+    {
+        $image          =   $this->Cropped()->exists() ? $this->Cropped() : $this->Original();
+        return $image->getURL();
+    }
+
+    public function CMSThumbnail() {
+        $image          =   $this->Cropped()->exists() ? $this->Cropped() : $this->Original();
+        return $image->Pad($image->stat('cms_thumbnail_width'),$image->stat('cms_thumbnail_height'));
+    }
+
     public function getThumbnail()
     {
         return  $this->Cropped()->exists() ?
@@ -115,17 +126,21 @@ class SaltedCroppableImage extends DataObject
         if (!$this->Original()->exists() && $this->Cropped()->exists()) {
             $this->Cropped()->delete();
         } elseif ($this->Original()->exists()) {
-            $changes = $this->getChangedFields();
+            if (!empty($this->CropperWidth) && !empty($this->CropperHeight)) {
+                $changes = $this->getChangedFields();
 
-            if ($this->hasChanged($changes, 'ContainerX') ||
-                $this->hasChanged($changes, 'ContainerY') ||
-                $this->hasChanged($changes, 'ContainerWidth') ||
-                $this->hasChanged($changes, 'ContainerHeight') ||
-                $this->hasChanged($changes, 'CropperX') ||
-                $this->hasChanged($changes, 'CropperY') ||
-                $this->hasChanged($changes, 'CropperWidth') ||
-                $this->hasChanged($changes, 'CropperHeight')) {
-                    $this->doCrop = true;
+                if ($this->hasChanged($changes, 'ContainerX') ||
+                    $this->hasChanged($changes, 'ContainerY') ||
+                    $this->hasChanged($changes, 'ContainerWidth') ||
+                    $this->hasChanged($changes, 'ContainerHeight') ||
+                    $this->hasChanged($changes, 'CropperX') ||
+                    $this->hasChanged($changes, 'CropperY') ||
+                    $this->hasChanged($changes, 'CropperWidth') ||
+                    $this->hasChanged($changes, 'CropperHeight')) {
+                        $this->doCrop = true;
+                }
+            } else {
+                $this->CroppedID        =   $this->OriginalID;
             }
         }
 
