@@ -13,6 +13,7 @@ class CroppableImageField extends FormField
      * @var Boolean
      **/
     protected $isFrontend = false;
+    protected $folderName = false;
 
     /**
      * @var CroppableImage
@@ -79,7 +80,10 @@ class CroppableImageField extends FormField
 
         if ($image) {
             $form->loadDataFrom($image);
-            // $fields->push(HiddenField::create('SaltedCroppableImageID', 'SaltedCroppableImageID', $image->ID));
+            if (!empty($this->folderName)) {
+                $fields->fieldByName('Root.Main.Original')->setFolderName($this->folderName);
+            }
+
             $fields->push(HiddenField::create('CropperRatio')->setValue($this->Ratio));
             $fields->push(HiddenField::create('ContainerX')->setValue($image->ContainerX));
             $fields->push(HiddenField::create('ContainerX')->setValue($image->ContainerX));
@@ -210,5 +214,10 @@ class CroppableImageField extends FormField
     public function timestamp()
     {
         return time();
+    }
+
+    public function setFolderName($folderName) {
+        $this->folderName = $folderName;
+        return $this;
     }
 }
