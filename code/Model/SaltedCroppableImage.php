@@ -33,6 +33,11 @@ class SaltedCroppableImage extends DataObject
         'Cropped'       =>  'Image'
     ];
 
+    public function URL()
+    {
+        return $this->getURL();
+    }
+
     public function getURL()
     {
         $image          =   $this->Cropped()->exists() ? $this->Cropped() : $this->Original();
@@ -126,21 +131,17 @@ class SaltedCroppableImage extends DataObject
         if (!$this->Original()->exists() && $this->Cropped()->exists()) {
             $this->Cropped()->delete();
         } elseif ($this->Original()->exists()) {
-            if (!empty($this->CropperWidth) && !empty($this->CropperHeight)) {
-                $changes = $this->getChangedFields();
+            $changes = $this->getChangedFields();
 
-                if ($this->hasChanged($changes, 'ContainerX') ||
-                    $this->hasChanged($changes, 'ContainerY') ||
-                    $this->hasChanged($changes, 'ContainerWidth') ||
-                    $this->hasChanged($changes, 'ContainerHeight') ||
-                    $this->hasChanged($changes, 'CropperX') ||
-                    $this->hasChanged($changes, 'CropperY') ||
-                    $this->hasChanged($changes, 'CropperWidth') ||
-                    $this->hasChanged($changes, 'CropperHeight')) {
-                        $this->doCrop = true;
-                }
-            } else {
-                $this->CroppedID        =   $this->OriginalID;
+            if ($this->hasChanged($changes, 'ContainerX') ||
+                $this->hasChanged($changes, 'ContainerY') ||
+                $this->hasChanged($changes, 'ContainerWidth') ||
+                $this->hasChanged($changes, 'ContainerHeight') ||
+                $this->hasChanged($changes, 'CropperX') ||
+                $this->hasChanged($changes, 'CropperY') ||
+                $this->hasChanged($changes, 'CropperWidth') ||
+                $this->hasChanged($changes, 'CropperHeight')) {
+                    $this->doCrop = true;
             }
         }
 
@@ -324,5 +325,15 @@ class SaltedCroppableImage extends DataObject
         }
 
         return $fileName;
+    }
+
+    public function getCropped()
+    {
+        return $this->Cropped()->exists() ? $this->Cropped() : $this->Original();
+    }
+
+    public function forTemplate()
+    {
+
     }
 }

@@ -1,4 +1,4 @@
 .salted-cropper {
     margin: 12px 0 12px 16px;
-    width: 698px !important;
+    max-width: 698px !important;
 }
