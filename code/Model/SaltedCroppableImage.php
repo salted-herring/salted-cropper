@@ -336,4 +336,11 @@ class SaltedCroppableImage extends DataObject
     {
         return $this->renderWith('SaltedCroppableImage');
     }
+
+    public function FillMax($width, $height)
+    {
+        $image          =   $this->Cropped()->exists() ? $this->Cropped() : $this->Original();
+
+        return $image->exists() ? $image->FillMax($width, $height) : null;
+    }
 }
