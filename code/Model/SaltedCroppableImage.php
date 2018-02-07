@@ -99,7 +99,7 @@ class SaltedCroppableImage extends DataObject
             [
                 UploadField::create(
                     'Original',
-                    'Website logo'
+                    'Original image'
                 )
             ]
         );
