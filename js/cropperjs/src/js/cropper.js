@@ -6,68 +6,81 @@ import events from './events';
 import handlers from './handlers';
 import change from './change';
 import methods from './methods';
-import * as $ from './utilities';
+import {
+  ACTION_ALL,
+  CLASS_HIDDEN,
+  CLASS_HIDE,
+  CLASS_INVISIBLE,
+  CLASS_MOVE,
+  DATA_ACTION,
+  EVENT_READY,
+  NAMESPACE,
+  REGEXP_DATA_URL,
+  REGEXP_DATA_URL_JPEG,
+  REGEXP_TAG_NAME,
+  WINDOW,
+} from './constants';
+import {
+  addClass,
+  addListener,
+  addTimestamp,
+  arrayBufferToDataURL,
+  assign,
+  dataURLToArrayBuffer,
+  dispatchEvent,
+  getData,
+  getOrientation,
+  isCrossOriginURL,
+  isFunction,
+  isPlainObject,
+  parseOrientation,
+  removeClass,
+  setData,
+} from './utilities';
 
-// Constants
-const NAMESPACE = 'cropper';
-
-// Classes
-const CLASS_HIDDEN = `${NAMESPACE}-hidden`;
-
-// Events
-const EVENT_ERROR = 'error';
-const EVENT_LOAD = 'load';
-const EVENT_READY = 'ready';
-const EVENT_CROP = 'crop';
-
-// RegExps
-const REGEXP_DATA_URL = /^data:/;
-const REGEXP_DATA_URL_JPEG = /^data:image\/jpeg;base64,/;
-
-let AnotherCropper;
+const AnotherCropper = WINDOW.Cropper;
 
 class Cropper {
-  constructor(element, options) {
-    const self = this;
+  /**
+   * Create a new Cropper.
+   * @param {Element} element - The target element for cropping.
+   * @param {Object} [options={}] - The configuration options.
+   */
+  constructor(element, options = {}) {
+    if (!element || !REGEXP_TAG_NAME.test(element.tagName)) {
+      throw new Error('The first argument is required and must be an <img> or <canvas> element.');
+    }
 
-    self.element = element;
-    self.options = $.extend({}, DEFAULTS, $.isPlainObject(options) && options);
-    self.loaded = false;
-    self.ready = false;
-    self.complete = false;
-    self.rotated = false;
-    self.cropped = false;
-    self.disabled = false;
-    self.replaced = false;
-    self.limited = false;
-    self.wheeling = false;
-    self.isImg = false;
-    self.originalUrl = '';
-    self.canvasData = null;
-    self.cropBoxData = null;
-    self.previews = null;
-    self.pointers = {};
-    self.init();
+    this.element = element;
+    this.options = assign({}, DEFAULTS, isPlainObject(options) && options);
+    this.cropped = false;
+    this.disabled = false;
+    this.pointers = {};
+    this.ready = false;
+    this.reloading = false;
+    this.replaced = false;
+    this.sized = false;
+    this.sizing = false;
+    this.init();
   }
 
   init() {
-    const self = this;
-    const element = self.element;
+    const { element } = this;
     const tagName = element.tagName.toLowerCase();
     let url;
 
-    if ($.getData(element, NAMESPACE)) {
+    if (getData(element, NAMESPACE)) {
       return;
     }
 
-    $.setData(element, NAMESPACE, self);
+    setData(element, NAMESPACE, this);
 
     if (tagName === 'img') {
-      self.isImg = true;
+      this.isImg = true;
 
       // e.g.: "img/picture.jpg"
-      url = element.getAttribute('src');
-      self.originalUrl = url;
+      url = element.getAttribute('src') || '';
+      this.originalUrl = url;
 
       // Stop when it's a blank image
       if (!url) {
@@ -80,48 +93,64 @@ class Cropper {
       url = element.toDataURL();
     }
 
-    self.load(url);
+    this.load(url);
   }
 
   load(url) {
-    const self = this;
-    const options = self.options;
-    const element = self.element;
-
     if (!url) {
       return;
     }
 
-    self.url = url;
-    self.imageData = {};
+    this.url = url;
+    this.imageData = {};
+
+    const { element, options } = this;
+
+    if (!options.rotatable && !options.scalable) {
+      options.checkOrientation = false;
+    }
 
     if (!options.checkOrientation || !window.ArrayBuffer) {
-      self.clone();
+      this.clone();
       return;
     }
 
     // XMLHttpRequest disallows to open a Data URL in some browsers like IE11 and Safari
     if (REGEXP_DATA_URL.test(url)) {
       if (REGEXP_DATA_URL_JPEG.test(url)) {
-        self.read($.dataURLToArrayBuffer(url));
+        this.read(dataURLToArrayBuffer(url));
       } else {
-        self.clone();
+        this.clone();
       }
+
       return;
     }
 
     const xhr = new XMLHttpRequest();
 
+    this.reloading = true;
+    this.xhr = xhr;
+
+    const done = () => {
+      this.reloading = false;
+      this.xhr = null;
+    };
+
+    xhr.ontimeout = done;
+    xhr.onabort = done;
     xhr.onerror = () => {
-      self.clone();
+      done();
+      this.clone();
     };
 
     xhr.onload = () => {
-      self.read(xhr.response);
+      done();
+      this.read(xhr.response);
     };
 
-    if (options.checkCrossOrigin && $.isCrossOriginURL(url) && element.crossOrigin) {
-      url = $.addTimestamp(url);
+    // Bust cache when there is a "crossOrigin" property
+    if (options.checkCrossOrigin && isCrossOriginURL(url) && element.crossOrigin) {
+      url = addTimestamp(url);
     }
 
     xhr.open('get', url);
@@ -131,57 +160,15 @@ class Cropper {
   }
 
   read(arrayBuffer) {
-    const self = this;
-    const options = self.options;
-    const orientation = $.getOrientation(arrayBuffer);
-    const imageData = self.imageData;
+    const { options, imageData } = this;
+    const orientation = getOrientation(arrayBuffer);
     let rotate = 0;
     let scaleX = 1;
     let scaleY = 1;
 
     if (orientation > 1) {
-      self.url = $.arrayBufferToDataURL(arrayBuffer);
-
-      switch (orientation) {
-        // flip horizontal
-        case 2:
-          scaleX = -1;
-          break;
-
-        // rotate left 180°
-        case 3:
-          rotate = -180;
-          break;
-
-        // flip vertical
-        case 4:
-          scaleY = -1;
-          break;
-
-        // flip vertical + rotate right 90°
-        case 5:
-          rotate = 90;
-          scaleY = -1;
-          break;
-
-        // rotate right 90°
-        case 6:
-          rotate = 90;
-          break;
-
-        // flip horizontal + rotate right 90°
-        case 7:
-          rotate = 90;
-          scaleX = -1;
-          break;
-
-        // rotate left 90°
-        case 8:
-          rotate = -90;
-          break;
-
-        default:
-      }
+      this.url = arrayBufferToDataURL(arrayBuffer, 'image/jpeg');
+      ({ rotate, scaleX, scaleY } = parseOrientation(orientation));
     }
 
     if (options.rotatable) {
@@ -193,18 +180,16 @@ class Cropper {
       imageData.scaleY = scaleY;
     }
 
-    self.clone();
+    this.clone();
   }
 
   clone() {
-    const self = this;
-    const element = self.element;
-    const url = self.url;
+    const { element, url } = this;
     let crossOrigin;
     let crossOriginUrl;
 
-    if (self.options.checkCrossOrigin && $.isCrossOriginURL(url)) {
-      crossOrigin = element.crossOrigin;
+    if (this.options.checkCrossOrigin && isCrossOriginURL(url)) {
+      ({ crossOrigin } = element);
 
       if (crossOrigin) {
         crossOriginUrl = url;
@@ -212,240 +197,234 @@ class Cropper {
         crossOrigin = 'anonymous';
 
         // Bust cache when there is not a "crossOrigin" property
-        crossOriginUrl = $.addTimestamp(url);
+        crossOriginUrl = addTimestamp(url);
       }
     }
 
-    self.crossOrigin = crossOrigin;
-    self.crossOriginUrl = crossOriginUrl;
+    this.crossOrigin = crossOrigin;
+    this.crossOriginUrl = crossOriginUrl;
 
-    const image = $.createElement('img');
+    const image = document.createElement('img');
 
     if (crossOrigin) {
       image.crossOrigin = crossOrigin;
     }
 
     image.src = crossOriginUrl || url;
-
-    const start = $.proxy(self.start, self);
-    const stop = $.proxy(self.stop, self);
-
-    self.image = image;
-    self.onStart = start;
-    self.onStop = stop;
-
-    if (self.isImg) {
-      if (element.complete) {
-        self.start();
-      } else {
-        $.addListener(element, EVENT_LOAD, start);
-      }
-    } else {
-      $.addListener(image, EVENT_LOAD, start);
-      $.addListener(image, EVENT_ERROR, stop);
-      $.addClass(image, 'cropper-hide');
-      element.parentNode.insertBefore(image, element.nextSibling);
-    }
+    this.image = image;
+    image.onload = this.start.bind(this);
+    image.onerror = this.stop.bind(this);
+    addClass(image, CLASS_HIDE);
+    element.parentNode.insertBefore(image, element.nextSibling);
   }
 
-  start(event) {
-    const self = this;
-    const image = self.isImg ? self.element : self.image;
+  start() {
+    const image = this.isImg ? this.element : this.image;
 
-    if (event) {
-      $.removeListener(image, EVENT_LOAD, self.onStart);
-      $.removeListener(image, EVENT_ERROR, self.onStop);
-    }
+    image.onload = null;
+    image.onerror = null;
+    this.sizing = true;
 
-    $.getImageSize(image, (naturalWidth, naturalHeight) => {
-      $.extend(self.imageData, {
+    const IS_SAFARI = WINDOW.navigator && /(Macintosh|iPhone|iPod|iPad).*AppleWebKit/i.test(WINDOW.navigator.userAgent);
+    const done = (naturalWidth, naturalHeight) => {
+      assign(this.imageData, {
         naturalWidth,
         naturalHeight,
         aspectRatio: naturalWidth / naturalHeight,
       });
+      this.sizing = false;
+      this.sized = true;
+      this.build();
+    };
 
-      self.loaded = true;
-      self.build();
-    });
-  }
-
-  stop() {
-    const self = this;
-    const image = self.image;
-
-    $.removeListener(image, EVENT_LOAD, self.onStart);
-    $.removeListener(image, EVENT_ERROR, self.onStop);
-
-    $.removeChild(image);
-    self.image = null;
-  }
-
-  build() {
-    const self = this;
-    const options = self.options;
-    const element = self.element;
-    const image = self.image;
-
-    if (!self.loaded) {
+    // Modern browsers (except Safari)
+    if (image.naturalWidth && !IS_SAFARI) {
+      done(image.naturalWidth, image.naturalHeight);
       return;
     }
 
-    // Unbuild first when replace
-    if (self.ready) {
-      self.unbuild();
+    const sizingImage = document.createElement('img');
+    const body = document.body || document.documentElement;
+
+    this.sizingImage = sizingImage;
+
+    sizingImage.onload = () => {
+      done(sizingImage.width, sizingImage.height);
+
+      if (!IS_SAFARI) {
+        body.removeChild(sizingImage);
+      }
+    };
+
+    sizingImage.src = image.src;
+
+    // iOS Safari will convert the image automatically
+    // with its orientation once append it into DOM (#279)
+    if (!IS_SAFARI) {
+      sizingImage.style.cssText = (
+        'left:0;' +
+        'max-height:none!important;' +
+        'max-width:none!important;' +
+        'min-height:0!important;' +
+        'min-width:0!important;' +
+        'opacity:0;' +
+        'position:absolute;' +
+        'top:0;' +
+        'z-index:-1;'
+      );
+      body.appendChild(sizingImage);
     }
+  }
+
+  stop() {
+    const { image } = this;
+
+    image.onload = null;
+    image.onerror = null;
+    image.parentNode.removeChild(image);
+    this.image = null;
+  }
+
+  build() {
+    if (!this.sized || this.ready) {
+      return;
+    }
+
+    const { element, options, image } = this;
 
     // Create cropper elements
     const container = element.parentNode;
-    const template = $.createElement('div');
+    const template = document.createElement('div');
 
     template.innerHTML = TEMPLATE;
 
-    const cropper = $.getByClass(template, 'cropper-container')[0];
-    const canvas = $.getByClass(cropper, 'cropper-canvas')[0];
-    const dragBox = $.getByClass(cropper, 'cropper-drag-box')[0];
-    const cropBox = $.getByClass(cropper, 'cropper-crop-box')[0];
-    const face = $.getByClass(cropBox, 'cropper-face')[0];
+    const cropper = template.querySelector(`.${NAMESPACE}-container`);
+    const canvas = cropper.querySelector(`.${NAMESPACE}-canvas`);
+    const dragBox = cropper.querySelector(`.${NAMESPACE}-drag-box`);
+    const cropBox = cropper.querySelector(`.${NAMESPACE}-crop-box`);
+    const face = cropBox.querySelector(`.${NAMESPACE}-face`);
 
-    self.container = container;
-    self.cropper = cropper;
-    self.canvas = canvas;
-    self.dragBox = dragBox;
-    self.cropBox = cropBox;
-    self.viewBox = $.getByClass(cropper, 'cropper-view-box')[0];
-    self.face = face;
+    this.container = container;
+    this.cropper = cropper;
+    this.canvas = canvas;
+    this.dragBox = dragBox;
+    this.cropBox = cropBox;
+    this.viewBox = cropper.querySelector(`.${NAMESPACE}-view-box`);
+    this.face = face;
 
-    $.appendChild(canvas, image);
+    canvas.appendChild(image);
 
     // Hide the original image
-    $.addClass(element, CLASS_HIDDEN);
+    addClass(element, CLASS_HIDDEN);
 
     // Inserts the cropper after to the current image
     container.insertBefore(cropper, element.nextSibling);
 
     // Show the image if is hidden
-    if (!self.isImg) {
-      $.removeClass(image, 'cropper-hide');
+    if (!this.isImg) {
+      removeClass(image, CLASS_HIDE);
     }
 
-    self.initPreview();
-    self.bind();
+    this.initPreview();
+    this.bind();
 
+    options.initialAspectRatio = Math.max(0, options.initialAspectRatio) || NaN;
     options.aspectRatio = Math.max(0, options.aspectRatio) || NaN;
     options.viewMode = Math.max(0, Math.min(3, Math.round(options.viewMode))) || 0;
 
-    self.cropped = options.autoCrop;
-
-    if (options.autoCrop) {
-      if (options.modal) {
-        $.addClass(dragBox, 'cropper-modal');
-      }
-    } else {
-      $.addClass(cropBox, CLASS_HIDDEN);
-    }
+    addClass(cropBox, CLASS_HIDDEN);
 
     if (!options.guides) {
-      $.addClass($.getByClass(cropBox, 'cropper-dashed'), CLASS_HIDDEN);
+      addClass(cropBox.getElementsByClassName(`${NAMESPACE}-dashed`), CLASS_HIDDEN);
     }
 
     if (!options.center) {
-      $.addClass($.getByClass(cropBox, 'cropper-center'), CLASS_HIDDEN);
+      addClass(cropBox.getElementsByClassName(`${NAMESPACE}-center`), CLASS_HIDDEN);
     }
 
     if (options.background) {
-      $.addClass(cropper, 'cropper-bg');
+      addClass(cropper, `${NAMESPACE}-bg`);
     }
 
     if (!options.highlight) {
-      $.addClass(face, 'cropper-invisible');
+      addClass(face, CLASS_INVISIBLE);
     }
 
     if (options.cropBoxMovable) {
-      $.addClass(face, 'cropper-move');
-      $.setData(face, 'action', 'all');
+      addClass(face, CLASS_MOVE);
+      setData(face, DATA_ACTION, ACTION_ALL);
     }
 
     if (!options.cropBoxResizable) {
-      $.addClass($.getByClass(cropBox, 'cropper-line'), CLASS_HIDDEN);
-      $.addClass($.getByClass(cropBox, 'cropper-point'), CLASS_HIDDEN);
+      addClass(cropBox.getElementsByClassName(`${NAMESPACE}-line`), CLASS_HIDDEN);
+      addClass(cropBox.getElementsByClassName(`${NAMESPACE}-point`), CLASS_HIDDEN);
     }
 
-    self.setDragMode(options.dragMode);
-    self.render();
-    self.ready = true;
-    self.setData(options.data);
+    this.render();
+    this.ready = true;
+    this.setDragMode(options.dragMode);
 
-    // Call the "ready" option asynchronously to keep "image.cropper" is defined
-    self.completing = setTimeout(() => {
-      if ($.isFunction(options.ready)) {
-        $.addListener(element, EVENT_READY, options.ready, true);
-      }
+    if (options.autoCrop) {
+      this.crop();
+    }
 
-      $.dispatchEvent(element, EVENT_READY);
-      $.dispatchEvent(element, EVENT_CROP, self.getData());
+    this.setData(options.data);
 
-      self.complete = true;
-    }, 0);
+    if (isFunction(options.ready)) {
+      addListener(element, EVENT_READY, options.ready, {
+        once: true,
+      });
+    }
+
+    dispatchEvent(element, EVENT_READY);
   }
 
   unbuild() {
-    const self = this;
-
-    if (!self.ready) {
+    if (!this.ready) {
       return;
     }
 
-    if (!self.complete) {
-      clearTimeout(self.completing);
-    }
-
-    self.ready = false;
-    self.complete = false;
-    self.initialImageData = null;
-
-    // Clear `initialCanvasData` is necessary when replace
-    self.initialCanvasData = null;
-    self.initialCropBoxData = null;
-    self.containerData = null;
-    self.canvasData = null;
-
-    // Clear `cropBoxData` is necessary when replace
-    self.cropBoxData = null;
-    self.unbind();
-
-    self.resetPreview();
-    self.previews = null;
-
-    self.viewBox = null;
-    self.cropBox = null;
-    self.dragBox = null;
-    self.canvas = null;
-    self.container = null;
-
-    $.removeChild(self.cropper);
-    self.cropper = null;
+    this.ready = false;
+    this.unbind();
+    this.resetPreview();
+    this.cropper.parentNode.removeChild(this.cropper);
+    removeClass(this.element, CLASS_HIDDEN);
   }
 
+  uncreate() {
+    if (this.ready) {
+      this.unbuild();
+      this.ready = false;
+      this.cropped = false;
+    } else if (this.sizing) {
+      this.sizingImage.onload = null;
+      this.sizing = false;
+      this.sized = false;
+    } else if (this.reloading) {
+      this.xhr.abort();
+    } else if (this.image) {
+      this.stop();
+    }
+  }
+
+  /**
+   * Get the no conflict cropper class.
+   * @returns {Cropper} The cropper class.
+   */
   static noConflict() {
     window.Cropper = AnotherCropper;
     return Cropper;
   }
 
+  /**
+   * Change the default options.
+   * @param {Object} options - The new default options.
+   */
   static setDefaults(options) {
-    $.extend(DEFAULTS, $.isPlainObject(options) && options);
+    assign(DEFAULTS, isPlainObject(options) && options);
   }
 }
 
-$.extend(Cropper.prototype, render);
-$.extend(Cropper.prototype, preview);
-$.extend(Cropper.prototype, events);
-$.extend(Cropper.prototype, handlers);
-$.extend(Cropper.prototype, change);
-$.extend(Cropper.prototype, methods);
-
-if (typeof window !== 'undefined') {
-  AnotherCropper = window.Cropper;
-  window.Cropper = Cropper;
-}
+assign(Cropper.prototype, render, preview, events, handlers, change, methods);
 
 export default Cropper;
