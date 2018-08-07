@@ -8,7 +8,7 @@ use SilverStripe\View\Requirements;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Assets\Image;
 use SilverStripe\AssetAdmin\Forms\UploadField;
-use SilverStripe\AssetAdmin\Forms\LiteralField;
+use SilverStripe\Forms\LiteralField;
 /**
  * Description
  *
@@ -82,20 +82,9 @@ class SaltedCroppableImage extends DataObject
      */
     public function getCMSFields()
     {
-        Requirements::combine_files(
-            'cropperfield-all.css',
-            array(
-                SALTEDCROPPER_PATH . '/js/cropperjs/dist/cropper.min.css'
-            )
-        );
-
-        Requirements::combine_files(
-            'cropperfield-all.js',
-            array(
-                SALTEDCROPPER_PATH . '/js/cropperjs/dist/cropper.min.js',
-                SALTEDCROPPER_PATH . '/js/salted-cropper.js'
-            )
-        );
+        Requirements::css('salted-herring/salted-cropper: client/js/cropperjs/dist/cropper.min.css');
+        Requirements::javascript('salted-herring/salted-cropper: client/js/cropperjs/dist/cropper.min.js');
+        Requirements::javascript('salted-herring/salted-cropper: client/js/salted-cropper.js');
 
         $fields = parent::getCMSFields();
         $fields->removeByName([

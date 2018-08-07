@@ -56,9 +56,9 @@ class CroppableImageField extends FormField
 
     public function Field($properties = [])
     {
-        Requirements::css(SALTEDCROPPER_PATH . '/css/salted-croppable.css');
-        Requirements::css(SALTEDCROPPER_PATH . '/css/salted-cropper.css');
-        Requirements::javascript(SALTEDCROPPER_PATH . '/js/salted-croppable-field.js');
+        Requirements::css('salted-herring/salted-cropper: client/css/salted-croppable.css');
+        Requirements::css('salted-herring/salted-cropper: client/css/salted-cropper.css');
+        Requirements::javascript('salted-herring/salted-cropper: client/js/salted-croppable-field.js');
 
         return parent::Field();
     }
@@ -82,7 +82,7 @@ class CroppableImageField extends FormField
         if ($CroppableImageID = (int) $this->request->getVar('SaltedCroppableImageID')) {
             $image = SaltedCroppableImage::get()->byID($CroppableImageID);
         }
-        $image = $image ? $image : singleton('SaltedCroppableImage');
+        $image = $image ? $image : singleton('SaltedHerring\Salted\Cropper\SaltedCroppableImage');
 
         // $image->setAllowedTypes($this->getAllowedTypes());
         $fields = $image->getCMSFields();
