@@ -125,7 +125,7 @@ jQuery.entwine("saltedcroppable", function($) {
 
     $(".croppable-image-field-button").entwine({
         onclick: function() {
-            this.siblings('input.link').showDialog();
+            this.siblings('input.croppableimage').showDialog();
             return false;
         },
     });
