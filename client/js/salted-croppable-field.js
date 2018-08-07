@@ -115,17 +115,9 @@ jQuery.entwine("saltedcroppable", function($) {
         }
     });
 
-    // $('#Form_CroppableImageForm_Original_Holder .ss-uploadfield-item-delete').entwine(
-    // {
-    //     onmatch :   function()
-    //                 {
-    //                     // this.remove();
-    //                 }
-    // });
-
     $(".croppable-image-field-button").entwine({
         onclick: function() {
-            this.siblings('input.link').showDialog();
+            this.siblings('input.croppableimage').showDialog();
             return false;
         },
     });
