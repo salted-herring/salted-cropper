@@ -1,11 +1,21 @@
 <?php
-use SaltedHerring\Debugger;
+
+namespace SaltedHerring\Salted\Cropper;
+
+use SilverStripe\Assets\File;
+use SilverStripe\Assets\Folder;
+use SilverStripe\View\Requirements;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\Assets\Image;
+use SilverStripe\AssetAdmin\Forms\UploadField;
+use SilverStripe\AssetAdmin\Forms\LiteralField;
 /**
  * Description
  *
  * @package silverstripe
  * @subpackage mysite
  */
+
 class SaltedCroppableImage extends DataObject
 {
     private $doCrop         =   false;
@@ -29,8 +39,8 @@ class SaltedCroppableImage extends DataObject
      * @var array
      */
     private static $has_one = [
-        'Original'      =>  'Image',
-        'Cropped'       =>  'Image'
+        'Original'          =>  'SilverStripe\Assets\Image',
+        'Cropped'           =>  'SilverStripe\Assets\Image'
     ];
 
     public function URL()
@@ -209,7 +219,7 @@ class SaltedCroppableImage extends DataObject
         $cropper_h = $this->CropperHeight;
 
         $cropped = $this->duplicateImage($this->Original());
-        $cropped->isCropped =   true;
+
         $cropped->write();
         //$this->CroppedID = $cropped->ID;
         if (extension_loaded('imagick')) {
@@ -224,7 +234,7 @@ class SaltedCroppableImage extends DataObject
     private function scaleCropImagick($image_path, $canvas_x, $canvas_y, $canvas_w, $canvas_h, $cropper_x, $cropper_y, $cropper_w, $cropper_h)
     {
 
-        $imagick = new Imagick($image_path);
+        $imagick = new \Imagick($image_path);
         $original_width = $imagick->getImageWidth();
         $x = $cropper_x + $canvas_x;
         $y = $cropper_y + $canvas_y;

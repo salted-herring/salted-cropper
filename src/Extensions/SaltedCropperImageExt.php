@@ -1,5 +1,7 @@
 <?php
 
+namespace SaltedHerring\Salted\Cropper\Extensions;
+
 class SaltedCropperImageExt extends DataExtension
 {
     /**

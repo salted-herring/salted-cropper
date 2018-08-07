@@ -1,5 +1,18 @@
 <?php
-use SaltedHerring\Debugger;
+
+namespace SaltedHerring\Salted\Cropper\Fields;
+
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\FormField;
+use SilverStripe\View\Requirements;
+use SilverStripe\Forms\FormAction;
+use SaltedHerring\Salted\Cropper\SaltedCroppableImage;
+use SilverStripe\Forms\HeaderField;
+use SilverStripe\Forms\Form;
+use SilverStripe\Forms\HiddenField;
+use SilverStripe\ORM\ValidationException;
+use SilverStripe\Control\Controller;
+
 /**
  * CroppableImageField
  *
@@ -7,6 +20,7 @@ use SaltedHerring\Debugger;
  * @license BSD License http://www.silverstripe.org/bsd-license
  * @author <shea@silverstripe.com.au>
  **/
+
 class CroppableImageField extends FormField
 {
     /**
@@ -27,12 +41,12 @@ class CroppableImageField extends FormField
      **/
     protected $allowed_types = null;
 
-    public static $allowed_actions = array(
+    public static $allowed_actions = [
         'CroppableImageForm',
         'CroppableImageFormHTML',
         'doSaveCroppableImage',
         'doRemoveCroppableImage'
-    );
+    ];
 
     public function setCropperRatio($ratio)
     {
@@ -40,7 +54,7 @@ class CroppableImageField extends FormField
         return $this;
     }
 
-    public function Field($properties = array())
+    public function Field($properties = [])
     {
         Requirements::css(SALTEDCROPPER_PATH . '/css/salted-croppable.css');
         Requirements::css(SALTEDCROPPER_PATH . '/css/salted-cropper.css');
@@ -142,7 +156,7 @@ class CroppableImageField extends FormField
     /**
      * Returns the current link object
      *
-     * @return CroppableImage
+     * @return SaltedCroppableImage
      **/
     public function getCroppableImageObject()
     {

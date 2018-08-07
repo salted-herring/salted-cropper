@@ -13,5 +13,10 @@
     ],
     "require": {
         "silverstripe/cms": "^4.0"
-    }
+    },
+    "autoload": {
+        "psr-4": {
+            "SaltedHerring\\SaltedCropper\\": "src/"
+        }
+    },
 }
