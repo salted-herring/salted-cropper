@@ -1,14 +1,17 @@
 {
-	"name": "salted-herring/salted-cropper",
-	"description": "Salted Herring's Image Cropper Field",
-	"type": "silverstripe-module",
-	"homepage": "https://github.com/salted-herring/salted-library",
-	"license": "MIT",
-	"keywords": ["PHP", "library"],
-	"authors": [
-		{
-			"name": "Salted Herring",
-			"homepage": "http://saltedherring.com"
-		}
-	]
+    "name": "salted-herring/salted-cropper",
+    "description": "Salted Herring's Image Cropper Field",
+    "type": "silverstripe-vendormodule",
+    "homepage": "https://github.com/salted-herring/salted-library",
+    "license": "MIT",
+    "keywords": ["cropperjs", "image cropper", "cropper tool","silverstripe image cropper"],
+    "authors": [
+        {
+            "name": "Salted Herring",
+            "homepage": "http://saltedherring.com"
+        }
+    ],
+    "require": {
+        "silverstripe/cms": "^4.0"
+    },
 }
