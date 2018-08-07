@@ -18,6 +18,12 @@ use SilverStripe\AssetAdmin\Forms\LiteralField;
 
 class SaltedCroppableImage extends DataObject
 {
+    /**
+     * Defines the database table name
+     * @var string
+     */
+    private static $table_name = 'SaltedCroppableImage';
+
     private $doCrop         =   false;
     /**
      * Database fields

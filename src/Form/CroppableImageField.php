@@ -41,7 +41,7 @@ class CroppableImageField extends FormField
      **/
     protected $allowed_types = null;
 
-    public static $allowed_actions = [
+    private static $allowed_actions = [
         'CroppableImageForm',
         'CroppableImageFormHTML',
         'doSaveCroppableImage',
