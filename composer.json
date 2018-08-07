@@ -17,7 +17,7 @@
     "extra": {
         "expose": [
             "client/css",
-            "client/javascript"
+            "client/js"
         ]
     },
     "autoload": {
