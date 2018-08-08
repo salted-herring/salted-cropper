@@ -1,3 +1,7 @@
+.salted-croppable {
+    margin-bottom: 1rem;
+}
+
 .salted-croppable-dialog {
     box-sizing: border-box;
     width: 100% !important;
@@ -6,4 +10,8 @@
 
 .salted-croppable-dialog * {
     box-sizing: border-box;
+}
+
+.salted-croppable-dialog ul.nav-tabs {
+    display: none;
 }

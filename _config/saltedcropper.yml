@@ -1,0 +1,9 @@
+---
+Name: saltedcropper
+---
+SilverStripe\Assets\Image:
+  extensions:
+    - SaltedHerring\Salted\Cropper\Extensions\SaltedCroppableImageExtension
+SilverStripe\Assets\Storage\DBFile:
+  extensions:
+    - SaltedHerring\Salted\Cropper\Extensions\SaltedCroppableImageExtension

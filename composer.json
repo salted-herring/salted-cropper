@@ -19,10 +19,5 @@
             "client/css",
             "client/js"
         ]
-    },
-    "autoload": {
-        "psr-4": {
-            "SaltedHerring\\SaltedCropper\\": "src/"
-        }
     }
 }
