@@ -168,6 +168,15 @@ class SaltedCroppableImage extends DataObject
         return $fields;
     }
 
+    /**
+     * Event handler called after writing to the database.
+     */
+    public function onAfterWrite()
+    {
+        parent::onAfterWrite();
+        $this->Original()->publish('Stage', 'Live');
+    }
+
     public function forTemplate()
     {
         return $this->renderWith([SaltedCroppableImage::class]);

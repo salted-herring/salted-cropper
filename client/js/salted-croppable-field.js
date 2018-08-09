@@ -12,7 +12,7 @@ jQuery.entwine("saltedcroppable", function($) {
                 formUrl = form.attr('action'),
                 formUrlParts = formUrl.split('?'),
                 formUrl = formUrlParts[0],
-                url = encodeURI(formUrl) + '/field/' + this.attr('name') + '/CroppableImageFormHTML';
+                url = encodeURI(formUrl) + 'field/' + this.attr('name') + '/CroppableImageFormHTML';
 
             if (self.val().length){
                 url = url + '?SaltedCroppableImageID=' + self.val();
@@ -132,7 +132,7 @@ jQuery.entwine("saltedcroppable", function($) {
                 var formUrl = form.attr('action'),
                     formUrlParts = formUrl.split('?'),
                     formUrl = formUrlParts[0],
-                    url = encodeURI(formUrl) + '/field/' + this.parents('.middleColumn:first').find('input:first').prop('name') + '/doRemoveCroppableImage?id=' + id;
+                    url = encodeURI(formUrl) + 'field/' + this.parents('.form__field-holder:first').find('input:first').prop('name') + '/doRemoveCroppableImage?id=' + id;
 
                 if(typeof formUrlParts[1] !== 'undefined') {
                     url = url + '&' + formUrlParts[1];
@@ -145,6 +145,14 @@ jQuery.entwine("saltedcroppable", function($) {
             }
 
             return false;
-        },
+        }
+    });
+
+    $('.salted-croppable-dialog .uploadfield__upload-button').entwine(
+    {
+        onclick :   function()
+                    {
+                        $(this).parents('.uploadfield:eq(0)').siblings('.entwine-uploadfield.uploadfield:eq(0)').click();
+                    }
     });
 });
