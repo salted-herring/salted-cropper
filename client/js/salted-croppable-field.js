@@ -150,9 +150,12 @@ jQuery.entwine("saltedcroppable", function($) {
 
     $('.salted-croppable-dialog .uploadfield__upload-button').entwine(
     {
-        onclick :   function(e)
+        onmatch :   function(e)
                     {
-                        console.log(e);
+                        var muppet  =   $(this).parents('.form__field-holder:eq(0)').find('input.entwine-uploadfield'),
+                            real    =   $('.dz-input-' + muppet.data('schema').name);
+
+                        real.insertAfter(muppet);
                     }
     });
 });
