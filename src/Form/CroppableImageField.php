@@ -72,10 +72,10 @@ class CroppableImageField extends FormField
     {
         $image = $this->getCroppableImageObject();
 
-        $action = FormAction::create('doSaveCroppableImage', _t('CroppableImageable.SAVE', 'Save'))->setUseButtonTag('true')->addExtraClass('btn-primary');
+        $action = FormAction::create('doSaveCroppableImage', _t('CroppableImageable.SAVE', 'Save'))->setUseButtonTag('true')->addExtraClass('btn-primary font-icon-save');
 
         if (!$this->isFrontend) {
-            $action->addExtraClass('btn-primary')->setAttribute('data-icon', 'accept');
+            $action->addExtraClass('btn-primary font-icon-save')->setAttribute('data-icon', 'accept');
         }
 
         $image = null;
