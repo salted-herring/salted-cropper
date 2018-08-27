@@ -11,6 +11,8 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\Assets\Image;
 use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Forms\LiteralField;
+use Leochenftw\Debugger;
+
 /**
  * Description
  *
@@ -82,8 +84,9 @@ class SaltedCroppableImage extends DataObject
             return null;
         }
 
+
         if (empty($this->CropperWidth) && empty($this->CropperHeight)) {
-            return null;
+            return $this->Original();
         }
 
         $canvas_x           =   $this->ContainerX;
