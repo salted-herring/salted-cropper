@@ -48,7 +48,7 @@ class SaltedCroppableImage extends DataObject
      * @var array
      */
     private static $has_one = [
-        'Original'          =>  'SilverStripe\Assets\Image'
+        'Original'          =>  Image::class
     ];
 
     public function URL()
