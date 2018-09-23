@@ -65,10 +65,10 @@ class SaltedCroppableImage extends DataObject
     public function getThumbnail()
     {
         return  $this->Cropped() ?
-                $this->Cropped()->FillMax(200, 120) :
+                $this->Cropped()->FitMax(200, 200) :
                 (
                     $this->Original()->exists() ?
-                    $this->Original()->FillMax(200, 120) :
+                    $this->Original()->FitMax(200, 200) :
                     null
                 );
     }
