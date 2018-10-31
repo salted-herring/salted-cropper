@@ -1,3 +1,3 @@
-import Cropper from './js/cropper';
+import Cropper from "./js/cropper"
 
-export default Cropper;
+export default Cropper
