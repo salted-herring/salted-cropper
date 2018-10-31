@@ -1,15 +1,15 @@
-const rollupConfig = require('./rollup.config');
+const rollupConfig = require("./rollup.config")
 
 module.exports = {
-  plugins: {
-    'postcss-import': {},
-    'postcss-cssnext': {},
-    'postcss-url': {
-      url: 'inline',
+    plugins: {
+        "postcss-import": {},
+        "postcss-cssnext": {},
+        "postcss-url": {
+            url: "inline",
+        },
+        "postcss-header": {
+            header: rollupConfig.output[0].banner,
+        },
+        stylefmt: {},
     },
-    'postcss-header': {
-      header: rollupConfig.output[0].banner,
-    },
-    stylefmt: {},
-  },
-};
+}
