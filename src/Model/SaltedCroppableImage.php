@@ -162,7 +162,7 @@ class SaltedCroppableImage extends DataObject
             $calc_height    =   $height * $ratio;
             $styles         =   " style=\"width:{$calc_width}px; height:{$calc_height}px\"";
 
-            $html           =   '<div class="salted-cropper"'. $styles .' data-name="'.$name.'" data-min-width="'. $calc_width .'" data-min-height="' . $calc_height . '"><img src="'.$this->Original()->URL.'" width="'.$width.'" height="'.$height.'" /></div>';
+            $html           =   '<div class="salted-cropper"'. $styles .' data-name="'.$name.'" data-min-width="'. $calc_width .'" data-min-height="' . $calc_height . '"><img src="'.$this->Original()->URL.'?timestamp=' . time() . '" width="'.$width.'" height="'.$height.'" /></div>';
 
             $fields->push(LiteralField::create('SaltedCropper', $html));
         }
