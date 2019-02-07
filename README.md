@@ -31,7 +31,7 @@ read on :/
     use SaltedHerring\Salted\Cropper\SaltedCroppableImage;
     use SaltedHerring\Salted\Cropper\Fields\CroppableImageField;
     ...
-    protected static $has_one = array(
+    private static $has_one = array(
         'Photo'     =>  SaltedCroppableImage::class
     );
 
