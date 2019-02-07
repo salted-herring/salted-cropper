@@ -27,8 +27,12 @@ read on :/
 4. Sample code:
 
     ```php
+    ...
+    use SaltedHerring\Salted\Cropper\SaltedCroppableImage;
+    use SaltedHerring\Salted\Cropper\Fields\CroppableImageField;
+    ...
     protected static $has_one = array(
-        'Photo'     =>  'SaltedCroppableImage'
+        'Photo'     =>  SaltedCroppableImage::class
     );
 
 
